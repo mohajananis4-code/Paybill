@@ -54,6 +54,42 @@ var mode='p2p',R=null,rid=null;
 function $(i){return document.getElementById(i)}
 function tab(m){mode=m;$('f-p2p').classList.toggle('hide',m!=='p2p');$('f-shop').classList.toggle('hide',m!=='shop');$('tp').className=m==='p2p'?'on':'';$('ts').className=m==='shop'?'on':''}
 function say(t){$('msg').textContent=t}
+
+// Step 1: speech-to-text only. Prices must still be checked by the seller.
+var recognition=null;
+function startVoice(){
+ var SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+ if(!SpeechRecognition){
+  $('voiceStatus').textContent='Speech recognition is not supported in this browser. Try a supported browser or type the items.';
+  return;
+ }
+ if(recognition){try{recognition.stop()}catch(e){}}
+ recognition=new SpeechRecognition();
+ recognition.lang=$('voiceLang').value;
+ recognition.continuous=false;
+ recognition.interimResults=true;
+ $('voiceText').value='';
+ $('voiceStatus').textContent='Listening... Speak clearly.';
+ $('micBtn').disabled=true;
+ recognition.onresult=function(event){
+  var words='';
+  for(var i=0;i<event.results.length;i++) words+=event.results[i][0].transcript;
+  $('voiceText').value=words;
+ };
+ recognition.onerror=function(event){
+  $('voiceStatus').textContent='Could not recognise speech ('+event.error+'). Please try again or type the items.';
+  $('micBtn').disabled=false;
+ };
+ recognition.onend=function(){
+  $('micBtn').disabled=false;
+  if($('voiceText').value.trim()) $('voiceStatus').textContent='Speech captured. Please check the text carefully.';
+  else if($('voiceStatus').textContent==='Listening... Speak clearly.') $('voiceStatus').textContent='No speech detected. Please try again.';
+ };
+ try{recognition.start()}catch(e){
+  $('voiceStatus').textContent='Microphone could not start. Please allow microphone access and try again.';
+  $('micBtn').disabled=false;
+ }
+}
 fetch('/config').then(r=>r.json()).then(function(c){
  var s=document.createElement('script');
  s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(c.clientId)+'&currency=USD';
