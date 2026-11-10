@@ -36,6 +36,29 @@ button.pri:disabled{opacity:.45}
   <div class="row t"><span>Total</span><span>$23.63</span></div>
   <div class="mut">Price server-la calculate aagum.</div>
  </div>
+ <div class="card" id="voice-card">
+  <b>🎤 Voice Bill Generator</b>
+
+  <label>Select language</label>
+  <select id="voiceLang">
+    <option value="en-IN">English</option>
+    <option value="ta-IN">Tamil</option>
+    <option value="hi-IN">Hindi</option>
+  </select>
+
+  <button class="pri" id="micBtn" onclick="startVoice()">
+    🎤 Start Speaking
+  </button>
+
+  <label>Recognised speech</label>
+  <textarea id="voiceText" rows="4"
+    placeholder="Your spoken bill will appear here..."
+    style="width:100%;padding:12px;box-sizing:border-box"></textarea>
+
+  <p id="voiceStatus" class="mut">
+    Tap the microphone and speak your bill.
+  </p>
+ </div>
  <div id="pp"></div><div id="msg" class="mut"></div>
 </div>
 <div id="rc" class="hide">
