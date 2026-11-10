@@ -1,148 +1,270 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PayBill</title>
 <style>
 body{margin:0;background:#f5f7fb;color:#14213d;font:16px/1.45 system-ui,sans-serif}
-.app{max-width:440px;margin:0 auto;padding:18px 16px 40px}
-.card{background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:16px;margin-bottom:12px}
+.app{max-width:440px;margin:auto;padding:18px 16px 40px}
+.card{background:white;border:1px solid #e3e8f0;border-radius:16px;padding:16px;margin-bottom:12px}
 .tabs{display:flex;gap:8px;margin-bottom:12px}
-.tabs button{flex:1;padding:12px;border-radius:12px;border:1px solid #e3e8f0;background:#fff;font:inherit;cursor:pointer}
-.tabs button.on{background:#0070e0;color:#fff;border-color:#0070e0}
+.tabs button{flex:1;padding:12px;border-radius:12px;border:1px solid #e3e8f0;background:white;font:inherit}
+.tabs button.on{background:#0070e0;color:white}
 label{display:block;font-size:13px;color:#667085;margin:10px 0 4px}
-input{width:100%;padding:12px;border-radius:10px;border:1px solid #e3e8f0;font:inherit;box-sizing:border-box}
-.row{display:flex;justify-content:space-between;padding:5px 0}
+input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #e3e8f0;font:inherit;box-sizing:border-box}
+.row{display:flex;justify-content:space-between;gap:8px;padding:5px 0}
 .t{border-top:1px dashed #ccd;margin-top:6px;padding-top:8px;font-weight:700}
 .paid{color:#12805c;border:2px solid #12805c;border-radius:8px;padding:2px 10px;font-weight:800}
-.timer{font:700 26px ui-monospace,monospace;text-align:center}
-button.pri{width:100%;padding:14px;border:0;border-radius:12px;background:#0070e0;color:#fff;font:600 16px inherit;cursor:pointer;margin-top:10px}
-button.pri:disabled{opacity:.45}
-.mut{color:#667085;font-size:13px}.hide{display:none}
-</style></head><body><div class="app">
-<h1>Pay</h1>
+.timer{font:700 26px monospace;text-align:center}
+button.pri{width:100%;padding:14px;border:0;border-radius:12px;background:#0070e0;color:white;font:600 16px system-ui;cursor:pointer;margin-top:10px}
+button:disabled{opacity:.45}
+.mut{color:#667085;font-size:13px}
+.hide{display:none}
+.item{border-bottom:1px solid #e3e8f0;padding:10px 0}
+.item input{margin-top:5px}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>PayBill</h1>
+
 <div id="pay">
- <div class="tabs"><button id="tp" class="on" onclick="tab('p2p')">👤 Person</button><button id="ts" onclick="tab('shop')">🏪 Shop</button></div>
- <div class="card" id="f-p2p">
-  <label>Receiver email</label><input id="email" type="email" placeholder="ravi@gmail.com">
-  <label>Amount (USD)</label><input id="amt" type="number" min="1" placeholder="10">
-  <label>Reason</label><input id="reason" placeholder="Lunch, Rent, Gift…">
- </div>
- <div class="card hide" id="f-shop">
-  <b>Chennai Fashion Hub ✅</b>
-  <div class="row"><span>2 × Shirt</span><span>$10.00</span></div>
-  <div class="row"><span>Jeans</span><span>$12.00</span></div>
-  <div class="row"><span>Delivery</span><span>$0.50</span></div>
-  <div class="row"><span>GST 5%</span><span>$1.13</span></div>
-  <div class="row t"><span>Total</span><span>$23.63</span></div>
-  <div class="mut">Price server-la calculate aagum.</div>
- </div>
- <div class="card" id="voice-card">
-  <b>🎤 Voice Bill Generator</b>
-
-  <label>Select language</label>
-  <select id="voiceLang">
-    <option value="en-IN">English</option>
-    <option value="ta-IN">Tamil</option>
-    <option value="hi-IN">Hindi</option>
-  </select>
-
-  <button class="pri" id="micBtn" onclick="startVoice()">
-    🎤 Start Speaking
-  </button>
-
-  <label>Recognised speech</label>
-  <textarea id="voiceText" rows="4"
-    placeholder="Your spoken bill will appear here..."
-    style="width:100%;padding:12px;box-sizing:border-box"></textarea>
-
-  <p id="voiceStatus" class="mut">
-    Tap the microphone and speak your bill.
-  </p>
- </div>
- <div id="pp"></div><div id="msg" class="mut"></div>
+<div class="tabs">
+<button id="tp" class="on" onclick="tab('p2p')">👤 Person</button>
+<button id="ts" onclick="tab('shop')">🏪 Shop</button>
 </div>
+
+<div class="card" id="f-p2p">
+<label>Receiver email</label>
+<input id="email" type="email" placeholder="ravi@gmail.com">
+<label>Amount (USD)</label>
+<input id="amt" type="number" min="1" placeholder="10">
+<label>Reason</label>
+<input id="reason" placeholder="Lunch, Rent, Gift">
+</div>
+
+<div class="card hide" id="f-shop">
+<b>Chennai Fashion Hub</b>
+<p class="mut">Create a bill using your voice below.</p>
+</div>
+
+<div class="card" id="voice-card">
+<b>🎤 AI Voice Bill Generator</b>
+<label>Select language</label>
+<select id="voiceLang">
+<option value="en-IN">English</option>
+<option value="ta-IN">Tamil</option>
+<option value="hi-IN">Hindi</option>
+</select>
+<button class="pri" id="micBtn" onclick="startVoice()">🎤 Start Speaking</button>
+<label>Recognised speech</label>
+<textarea id="voiceText" rows="3" placeholder="Speak your bill here..."></textarea>
+<p id="voiceStatus" class="mut">Tap microphone and speak.</p>
+<button class="pri" id="aiBtn" onclick="parseBill()">✨ Generate Bill with AI</button>
+</div>
+
+<div class="card hide" id="itemsCard">
+<b>Review your items</b>
+<p class="mut">Check item names, quantities and enter the correct prices.</p>
+<div id="items"></div>
+<div class="row t"><span>Total</span><span id="billTotal">$0.00</span></div>
+</div>
+
+<div id="pp"></div>
+<div id="msg" class="mut"></div>
+</div>
+
 <div id="rc" class="hide">
- <div class="card"><div class="row"><b id="r-title"></b><span class="paid">PAID ✅</span></div>
-  <div class="mut" id="r-to"></div><div class="mut" id="r-reason"></div>
-  <div id="r-lines"></div><div class="row t"><span>Total</span><span id="r-tot"></span></div>
-  <div class="mut">Txn: <span id="r-txn"></span></div></div>
- <div class="card"><b>Download window</b><div class="timer" id="tm"></div>
-  <div class="mut" id="info" style="text-align:center"></div>
-  <button class="pri" id="dl" onclick="dl()">Download bill</button></div>
- <button class="pri" onclick="location.reload()">New payment</button>
+<div class="card">
+<div class="row"><b id="r-title"></b><span class="paid">PAID</span></div>
+<div class="mut" id="r-to"></div>
+<div class="mut" id="r-reason"></div>
+<div id="r-lines"></div>
+<div class="row t"><span>Total</span><span id="r-tot"></span></div>
+<div class="mut">Txn: <span id="r-txn"></span></div>
+</div>
+<div class="card">
+<b>Download window</b>
+<div class="timer" id="tm"></div>
+<div class="mut" id="info"></div>
+<button class="pri" id="dl" onclick="dl()">Download bill</button>
+</div>
+<button class="pri" onclick="location.reload()">New payment</button>
 </div>
 </div>
+
 <script>
-var mode='p2p',R=null,rid=null;
-function $(i){return document.getElementById(i)}
-function tab(m){mode=m;$('f-p2p').classList.toggle('hide',m!=='p2p');$('f-shop').classList.toggle('hide',m!=='shop');$('tp').className=m==='p2p'?'on':'';$('ts').className=m==='shop'?'on':''}
+var mode='p2p',R=null,rid=null,recognition=null;
+var billItems=[];
+
+function $(id){return document.getElementById(id)}
 function say(t){$('msg').textContent=t}
 
-// Step 1: speech-to-text only. Prices must still be checked by the seller.
-var recognition=null;
+function tab(m){
+mode=m;
+$('f-p2p').classList.toggle('hide',m!=='p2p');
+$('f-shop').classList.toggle('hide',m!=='shop');
+$('tp').className=m==='p2p'?'on':'';
+$('ts').className=m==='shop'?'on':'';
+}
+
 function startVoice(){
- var SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SpeechRecognition){
-  $('voiceStatus').textContent='Speech recognition is not supported in this browser. Try a supported browser or type the items.';
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){
+$('voiceStatus').textContent='Speech recognition not supported. Please type your bill.';
+return;
+}
+if(recognition){try{recognition.stop()}catch(e){}}
+recognition=new SR();
+recognition.lang=$('voiceLang').value;
+recognition.continuous=false;
+recognition.interimResults=true;
+$('voiceText').value='';
+$('voiceStatus').textContent='Listening... Speak clearly.';
+$('micBtn').disabled=true;
+
+recognition.onresult=function(e){
+var words='';
+for(var i=0;i<e.results.length;i++)words+=e.results[i][0].transcript;
+$('voiceText').value=words;
+};
+recognition.onerror=function(e){
+$('voiceStatus').textContent='Speech error: '+e.error;
+$('micBtn').disabled=false;
+};
+recognition.onend=function(){
+$('micBtn').disabled=false;
+$('voiceStatus').textContent=$('voiceText').value.trim()?'Speech captured. Check the text.':'No speech detected.';
+};
+try{recognition.start()}catch(e){
+$('micBtn').disabled=false;
+$('voiceStatus').textContent='Microphone could not start.';
+}
+}
+async function parseBill(){
+ const transcript=$('voiceText').value.trim();
+ if(!transcript){
+  $('voiceStatus').textContent='Please speak or type your bill first.';
   return;
  }
- if(recognition){try{recognition.stop()}catch(e){}}
- recognition=new SpeechRecognition();
- recognition.lang=$('voiceLang').value;
- recognition.continuous=false;
- recognition.interimResults=true;
- $('voiceText').value='';
- $('voiceStatus').textContent='Listening... Speak clearly.';
- $('micBtn').disabled=true;
- recognition.onresult=function(event){
-  var words='';
-  for(var i=0;i<event.results.length;i++) words+=event.results[i][0].transcript;
-  $('voiceText').value=words;
- };
- recognition.onerror=function(event){
-  $('voiceStatus').textContent='Could not recognise speech ('+event.error+'). Please try again or type the items.';
-  $('micBtn').disabled=false;
- };
- recognition.onend=function(){
-  $('micBtn').disabled=false;
-  if($('voiceText').value.trim()) $('voiceStatus').textContent='Speech captured. Please check the text carefully.';
-  else if($('voiceStatus').textContent==='Listening... Speak clearly.') $('voiceStatus').textContent='No speech detected. Please try again.';
- };
- try{recognition.start()}catch(e){
-  $('voiceStatus').textContent='Microphone could not start. Please allow microphone access and try again.';
-  $('micBtn').disabled=false;
+
+ $('aiBtn').disabled=true;
+ $('aiBtn').textContent='AI is processing...';
+
+ try{
+  const response=await fetch('/api/parse-bill',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({transcript})
+  });
+
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||'AI request failed');
+
+  billItems=(data.items||[]).map(function(item){
+   return {name:item.name,quantity:item.quantity,price:0};
+  });
+
+  if(!billItems.length)throw new Error('No items detected. Try again.');
+
+  renderItems();
+  $('itemsCard').classList.remove('hide');
+  $('voiceStatus').textContent='AI identified your items. Please check them.';
+ }catch(error){
+  $('voiceStatus').textContent='Error: '+error.message;
+ }finally{
+  $('aiBtn').disabled=false;
+  $('aiBtn').textContent='✨ Generate Bill with AI';
  }
 }
-fetch('/config').then(r=>r.json()).then(function(c){
- var s=document.createElement('script');
- s.src='https://www.paypal.com/sdk/js?client-id='+encodeURIComponent(c.clientId)+'&currency=USD';
- s.onload=function(){
-  paypal.Buttons({
-   createOrder:function(){
-    var body=mode==='shop'?{type:'shop',shopId:'fashionhub'}:{type:'p2p',email:$('email').value.trim(),amount:$('amt').value,reason:$('reason').value};
-    return fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-     .then(r=>r.json()).then(function(d){if(!d.orderId){say('Email / amount check pannunga');throw new Error('bad')}rid=d.receiptId;return d.orderId})},
-   onApprove:function(d){
-    return fetch('/api/orders/'+d.orderID+'/capture',{method:'POST'}).then(r=>r.json()).then(showReceipt)},
-   onError:function(){say('Payment cancel / error')}
-  }).render('#pp')};
- document.body.appendChild(s)}).catch(function(){say('Server run aagudha nu paarunga')});
 
-function showReceipt(r){
- R=r;$('pay').classList.add('hide');$('rc').classList.remove('hide');
- $('r-title').textContent=r.title;$('r-to').textContent=r.to?'To: '+r.to:'';$('r-reason').textContent=r.reason||'';
- $('r-lines').innerHTML='';
- (r.lines||[]).forEach(function(l){var d=document.createElement('div');d.className='row';
-  var a=document.createElement('span'),b=document.createElement('span');a.textContent=l.n+' ×'+l.qty;b.textContent='$'+l.amt.toFixed(2);d.append(a,b);$('r-lines').appendChild(d)});
- $('r-tot').textContent='$'+r.total.toFixed(2);$('r-txn').textContent=r.txn||'';
- setInterval(tick,1000);tick()}
-function tick(){
- var ms=R.downloadExpiresAt-Date.now(),s=Math.max(0,Math.floor(ms/1000)),f=n=>String(n).padStart(2,'0');
- $('tm').textContent=f(Math.floor(s/3600))+':'+f(Math.floor(s%3600/60))+':'+f(s%60);
- var dead=ms<=0||R.downloadsLeft<=0;$('dl').disabled=dead;
- $('info').textContent=dead?'Download expired':'Downloads left: '+R.downloadsLeft}
-function dl(){
- fetch('/api/receipts/'+R.id+'/download',{method:'POST'}).then(function(r){
-  if(!r.ok){R.downloadsLeft=0;tick();return}
-  return r.json().then(function(d){R.downloadsLeft--;tick();location.href=d.url})})}
-</script></body></html>
+function renderItems(){
+ $('items').innerHTML='';
+
+ billItems.forEach(function(item,index){
+  const div=document.createElement('div');
+  div.className='item';
+
+  const name=document.createElement('input');
+  name.value=item.name;
+  name.placeholder='Product name';
+  name.addEventListener('input',function(){
+   billItems[index].name=name.value;
+  });
+
+  const qty=document.createElement('input');
+  qty.type='number';
+  qty.min='1';
+  qty.value=item.quantity;
+  qty.placeholder='Quantity';
+  qty.addEventListener('input',function(){
+   billItems[index].quantity=Math.max(1,Number(qty.value)||1);
+   updateTotal();
+  });
+
+  const price=document.createElement('input');
+  price.type='number';
+  price.min='0';
+  price.step='0.01';
+  price.placeholder='Price per item (USD)';
+  price.value=item.price||'';
+  price.addEventListener('input',function(){
+   billItems[index].price=Math.max(0,Number(price.value)||0);
+   updateTotal();
+  });
+
+  div.appendChild(name);
+  div.appendChild(qty);
+  div.appendChild(price);
+  $('items').appendChild(div);
+ });
+
+ updateTotal();
+}
+
+function updateTotal(){
+ const total=billItems.reduce(function(sum,item){
+  return sum+(item.quantity*item.price);
+ },0);
+ $('billTotal').textContent='$'+total.toFixed(2);
+}
+
+function createCustomOrder(){
+ if(!billItems.length){
+  say('Generate a bill first.');
+  return Promise.reject(new Error('No items'));
+ }
+
+ const valid=billItems.every(function(item){
+  return item.name.trim()&&item.quantity>0&&item.price>0;
+ });
+
+ if(!valid){
+  say('Check every item and enter a valid price.');
+  return Promise.reject(new Error('Invalid items'));
+ }
+
+ return fetch('/api/orders',{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({
+   type:'invoice',
+   items:billItems.map(function(item){
+    return {
+     name:item.name.trim(),
+     quantity:item.quantity,
+     price:item.price
+    };
+   })
+  })
+ }).then(function(r){return r.json()})
+ .then(function(data){
+  if(!data.orderId)throw new Error(data.error||'Order creation failed');
+  rid=data.receiptId;
+  return data.orderId;
+ });
+}
+</script>
+</body>
+</html>
