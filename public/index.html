@@ -265,6 +265,180 @@ function createCustomOrder(){
   return data.orderId;
  });
 }
+ // PAYPAL CONNECTION
+fetch('/config')
+  .then(function(response) {
+    if (!response.ok) throw new Error('Config failed');
+    return response.json();
+  })
+  .then(function(config) {
+    if (!config.clientId) {
+      throw new Error('PayPal Client ID is missing');
+    }
+
+    var script = document.createElement('script');
+    script.src =
+      'https://www.paypal.com/sdk/js?client-id=' +
+      encodeURIComponent(config.clientId) +
+      '&currency=USD';
+
+    script.onload = function() {
+      paypal.Buttons({
+
+        createOrder: function() {
+          // Shop tab uses the AI-generated custom invoice.
+          if (mode === 'shop') {
+            return createCustomOrder();
+          }
+
+          // Person-to-person payment.
+          var body = {
+            type: 'p2p',
+            email: $('email').value.trim(),
+            amount: $('amt').value,
+            reason: $('reason').value
+          };
+
+          return fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          })
+          .then(function(response) {
+            return response.json().then(function(data) {
+              if (!response.ok || !data.orderId) {
+                throw new Error(data.error || 'Order failed');
+              }
+              rid = data.receiptId;
+              return data.orderId;
+            });
+          });
+        },
+
+        onApprove: function(data) {
+          return fetch(
+            '/api/orders/' + encodeURIComponent(data.orderID) + '/capture',
+            { method: 'POST' }
+          )
+          .then(function(response) {
+            return response.json().then(function(result) {
+              if (!response.ok || result.status !== 'PAID') {
+                throw new Error('Payment could not be confirmed');
+              }
+              showReceipt(result);
+            });
+          });
+        },
+
+        onCancel: function() {
+          say('Payment cancelled.');
+        },
+
+        onError: function(error) {
+          console.error('PayPal error:', error);
+          say('Payment error. Please try again.');
+        }
+
+      }).render('#pp');
+    };
+
+    script.onerror = function() {
+      say('Could not load PayPal. Please refresh and try again.');
+    };
+
+    document.body.appendChild(script);
+  })
+  .catch(function(error) {
+    console.error(error);
+    say('PayPal setup error: ' + error.message);
+  });
+
+
+// SHOW PAYMENT RECEIPT
+function showReceipt(r) {
+  R = r;
+
+  $('pay').classList.add('hide');
+  $('rc').classList.remove('hide');
+
+  $('r-title').textContent = r.title || 'PayBill';
+  $('r-to').textContent = r.to ? 'To: ' + r.to : '';
+  $('r-reason').textContent = r.reason || '';
+  $('r-tot').textContent = '$' + Number(r.total).toFixed(2);
+  $('r-txn').textContent = r.txn || '';
+
+  $('r-lines').innerHTML = '';
+
+  (r.lines || []).forEach(function(line) {
+    var div = document.createElement('div');
+    div.className = 'row';
+
+    var name = document.createElement('span');
+    name.textContent = line.n + ' × ' + line.qty;
+
+    var amount = document.createElement('span');
+    amount.textContent = '$' + Number(line.amt).toFixed(2);
+
+    div.appendChild(name);
+    div.appendChild(amount);
+    $('r-lines').appendChild(div);
+  });
+
+  tick();
+  setInterval(tick, 1000);
+}
+
+
+// DOWNLOAD TIMER
+function tick() {
+  if (!R) return;
+
+  var remaining = R.downloadExpiresAt - Date.now();
+  var seconds = Math.max(0, Math.floor(remaining / 1000));
+
+  function pad(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  $('tm').textContent =
+    pad(Math.floor(seconds / 3600)) + ':' +
+    pad(Math.floor((seconds % 3600) / 60)) + ':' +
+    pad(seconds % 60);
+
+  var expired = remaining <= 0 || R.downloadsLeft <= 0;
+
+  $('dl').disabled = expired;
+  $('info').textContent = expired
+    ? 'Download expired'
+    : 'Downloads left: ' + R.downloadsLeft;
+}
+
+
+// DOWNLOAD RECEIPT
+function dl() {
+  if (!R) return;
+
+  $('dl').disabled = true;
+
+  fetch('/api/receipts/' + encodeURIComponent(R.id) + '/download', {
+    method: 'POST'
+  })
+  .then(function(response) {
+    if (!response.ok) {
+      throw new Error('Download expired or unavailable');
+    }
+    return response.json();
+  })
+  .then(function(data) {
+    R.downloadsLeft--;
+    tick();
+    location.href = data.url;
+  })
+  .catch(function(error) {
+    say(error.message);
+    tick();
+  });
+}
 </script>
 </body>
 </html>
