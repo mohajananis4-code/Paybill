@@ -280,10 +280,50 @@ app.post('/api/orders', express.json(), async (req, res) => {
       toMasked = mask(email);
       note = String(reason || '').slice(0, 100);
 
-    } else {
-      return res.status(400).json({ error: 'bad type' });
+    } else if (type === 'invoice') {
+  const inputItems = req.body.items;
+
+  if (!Array.isArray(inputItems) ||
+      inputItems.length < 1 ||
+      inputItems.length > 30) {
+    return res.status(400).json({ error: 'Invalid invoice items' });
+  }
+
+  let totalCents = 0;
+
+  for (const item of inputItems) {
+    const name = String(item.name || '').trim();
+    const qty = Number(item.quantity);
+    const price = Number(item.price);
+
+    if (!name || name.length > 80 ||
+        !Number.isInteger(qty) || qty < 1 || qty > 999 ||
+        !Number.isFinite(price) || price <= 0 || price > 10000) {
+      return res.status(400).json({ error: 'Invalid item details' });
     }
 
+    const lineCents = Math.round(price * 100) * qty;
+    totalCents += lineCents;
+
+    lines.push({
+      n: name,
+      qty,
+      amt: lineCents / 100
+    });
+  }
+
+  if (totalCents <= 0 || totalCents > 1000000) {
+    return res.status(400).json({ error: 'Invalid total' });
+  }
+
+  total = totalCents / 100;
+  title = 'PayBill Custom Invoice';
+  note = 'Seller verified invoice';
+
+} else {
+  return res.status(400).json({ error: 'bad type' });
+    }
+    
     const order = await pp('/v2/checkout/orders', {
       intent: 'CAPTURE',
       purchase_units: [{
